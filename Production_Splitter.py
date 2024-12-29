@@ -1,6 +1,7 @@
 import pdfplumber
 import pandas as pd
 import re
+from datetime import datetime, timedelta
 
 # File path
 pdf_path = r"C:\Users\Laptop 122\Desktop\Store Prep\EmployeeProductionByStoreReport.pdf"
@@ -75,6 +76,18 @@ df["Employee"] = df["Employee"].str.replace("Pieces/Hr \\$/Hr Skus/Hr", "", rege
 
 # Fill empty cells in the Employee column with the most recent non-empty value
 df["Employee"] = df["Employee"].fillna(method="ffill")
+
+# Convert the 'Date' column to datetime
+df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+
+# Calculate three-month threshold
+three_months_ago = datetime.now() - timedelta(days=90)
+
+# Identify employees with records within the last three months
+active_employees = df[df["Date"] >= three_months_ago]["Employee"].unique()
+
+# Filter the DataFrame to include only active employees
+df = df[df["Employee"].isin(active_employees)]
 
 # Export to CSV
 df.to_csv(csv_output_path, index=False)
