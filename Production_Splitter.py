@@ -10,11 +10,12 @@ csv_output_path = r"C:\Users\Laptop 122\Desktop\Store Prep\EmployeeProduction.cs
 # Initialize an empty list to hold the extracted data
 data = []
 
-# Define a function to parse the text and extract relevant fields
-def parse_employee_data(page_text):
-    lines = page_text.split("\n")
-    current_employee = None  # Tracks the current employee's name
+# Redefine parsing with cross-page employee tracking
+last_employee = None  # Tracks the last employee name across pages
 
+def parse_employee_data_with_carryover(page_text):
+    global last_employee
+    lines = page_text.split("\n")
     for line in lines:
         # Skip report date and page footer lines
         if re.match(r"\w+day, \w+ \d{1,2}, \d{4} Page \d+ of \d+", line):
@@ -22,7 +23,7 @@ def parse_employee_data(page_text):
 
         # Check for an employee name (no date or numeric values)
         if not any(char.isdigit() for char in line) and line.strip():
-            current_employee = line.strip()
+            last_employee = line.strip()  # Update the current employee name
         else:
             # Split the line into components
             parts = line.split()
@@ -52,7 +53,7 @@ def parse_employee_data(page_text):
 
                     # Append the row to the data
                     data.append({
-                        "Employee": current_employee,
+                        "Employee": last_employee,
                         "Date": date,
                         "Store": store,
                         "Pieces/Hr": pieces_hr,
@@ -62,20 +63,18 @@ def parse_employee_data(page_text):
                 except ValueError:
                     continue
 
-# Extract text from the PDF
+# Extract text from the PDF with cross-page tracking
 with pdfplumber.open(pdf_path) as pdf:
     for page in pdf.pages:
         text = page.extract_text()
-        parse_employee_data(text)
+        parse_employee_data_with_carryover(text)
 
 # Convert the data to a DataFrame
 df = pd.DataFrame(data)
 
-# Remove "Pieces/Hr $/Hr Skus/Hr" from every cell in the Employee column
+# Clean and process the DataFrame
 df["Employee"] = df["Employee"].str.replace("Pieces/Hr \\$/Hr Skus/Hr", "", regex=True)
-
-# Fill empty cells in the Employee column with the most recent non-empty value
-df["Employee"] = df["Employee"].fillna(method="ffill")
+df["Employee"] = df["Employee"].fillna(method="ffill")  # Carry forward any missing employee names
 
 # Convert the 'Date' column to datetime
 df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
