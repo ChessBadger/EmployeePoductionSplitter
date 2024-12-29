@@ -249,13 +249,38 @@ class PDF(FPDF):
         self.set_font("Arial", "I", 8)
         self.cell(0, 10, f"Page {self.page_no()}", align="C")
 
-    def add_summary_row(self, employee, pieces, dollars, skus):
+    def add_summary_row(self, employee, pieces, dollars, skus, grand_avg_pieces, grand_avg_dollars, grand_avg_skus):
         self.set_font("Arial", size=10)
+    
+        # Employee name
         self.cell(70, 10, employee, border=1, align="L")
+
+        # Pieces/Hr
+        if pd.notna(pieces) and pieces < grand_avg_pieces:
+            self.set_text_color(255, 0, 0)  # Red
+            self.set_font("Arial", "B", 10)  # Bold
         self.cell(40, 10, f"{pieces:.2f}" if pd.notna(pieces) else "N/A", border=1, align="C")
+        self.set_text_color(0, 0, 0)  # Reset to black
+        self.set_font("Arial", size=10)  # Reset to normal font
+
+        # $/Hr
+        if pd.notna(dollars) and dollars < grand_avg_dollars:
+            self.set_text_color(255, 0, 0)  # Red
+            self.set_font("Arial", "B", 10)  # Bold
         self.cell(40, 10, f"{dollars:.2f}" if pd.notna(dollars) else "N/A", border=1, align="C")
+        self.set_text_color(0, 0, 0)  # Reset to black
+        self.set_font("Arial", size=10)  # Reset to normal font
+
+        # Skus/Hr
+        if pd.notna(skus) and skus < grand_avg_skus:
+            self.set_text_color(255, 0, 0)  # Red
+            self.set_font("Arial", "B", 10)  # Bold
         self.cell(40, 10, f"{skus:.2f}" if pd.notna(skus) else "N/A", border=1, align="C")
+        self.set_text_color(0, 0, 0)  # Reset to black
+        self.set_font("Arial", size=10)  # Reset to normal font
+
         self.ln()
+
 
 pdf = PDF()
 pdf.add_page()
@@ -270,7 +295,17 @@ pdf.ln()
 
 # Add employee rows
 for _, row in averages_df.iterrows():
-    pdf.add_summary_row(row["Employee"], row["Avg Pieces/Hr"], row["Avg $/Hr"], row["Avg Skus/Hr"])
+    pdf.add_summary_row(
+        employee=row["Employee"],
+        pieces=row["Avg Pieces/Hr"],
+        dollars=row["Avg $/Hr"],
+        skus=row["Avg Skus/Hr"],
+        grand_avg_pieces=grand_avg_pieces,
+        grand_avg_dollars=grand_avg_dollars,
+        grand_avg_skus=grand_avg_skus,
+    )
+
+
 
 # Add grand averages at the bottom
 pdf.ln(10)
