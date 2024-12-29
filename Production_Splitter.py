@@ -81,3 +81,94 @@ df.to_csv(csv_output_path, index=False)
 print(f"Data has been exported to {csv_output_path}")
 
 
+import pandas as pd
+from fpdf import FPDF
+import os
+
+# Paths
+csv_path = r"C:\Users\Laptop 122\Desktop\Store Prep\EmployeeProduction.csv"
+summary_pdf_path = r"C:\Users\Laptop 122\Desktop\Store Prep\SummaryReport.pdf"
+
+# Load the CSV into a DataFrame
+df = pd.read_csv(csv_path)
+
+# Clean and convert columns to numeric
+df["Pieces/Hr"] = pd.to_numeric(df["Pieces/Hr"].str.replace(",", "", regex=True), errors="coerce").fillna(0)
+df["$/Hr"] = pd.to_numeric(df["$/Hr"].str.replace("[\$,]", "", regex=True), errors="coerce").fillna(0)
+df["Skus/Hr"] = pd.to_numeric(df["Skus/Hr"].str.replace(",", "", regex=True), errors="coerce").fillna(0)
+
+# Calculate cumulative averages for each employee
+grouped = df.groupby("Employee")
+employee_averages = []
+
+for employee, group in grouped:
+    avg_pieces = group.loc[group["Pieces/Hr"] > 0, "Pieces/Hr"].mean()
+    avg_dollars = group.loc[group["$/Hr"] > 0, "$/Hr"].mean()
+    avg_skus = group.loc[group["Skus/Hr"] > 0, "Skus/Hr"].mean()
+    if pd.notna(avg_pieces) or pd.notna(avg_dollars) or pd.notna(avg_skus):
+        employee_averages.append({
+            "Employee": employee,
+            "Avg Pieces/Hr": avg_pieces,
+            "Avg $/Hr": avg_dollars,
+            "Avg Skus/Hr": avg_skus,
+        })
+
+# Convert to DataFrame
+averages_df = pd.DataFrame(employee_averages)
+
+# Calculate grand averages
+grand_avg_pieces = averages_df["Avg Pieces/Hr"].mean()
+grand_avg_dollars = averages_df["Avg $/Hr"].mean()
+grand_avg_skus = averages_df["Avg Skus/Hr"].mean()
+
+# Sort employees by cumulative averages
+averages_df["Cumulative Avg"] = averages_df[["Avg Pieces/Hr", "Avg $/Hr", "Avg Skus/Hr"]].mean(axis=1, skipna=True)
+averages_df = averages_df.sort_values(by="Cumulative Avg", ascending=False)
+
+# Create Summary PDF
+class PDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 14)
+        self.cell(0, 10, "Employee Performance Summary", align="C", ln=True)
+        self.ln(5)
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("Arial", "I", 8)
+        self.cell(0, 10, f"Page {self.page_no()}", align="C")
+
+    def add_summary_row(self, employee, pieces, dollars, skus):
+        self.set_font("Arial", size=10)
+        self.cell(70, 10, employee, border=1, align="L")
+        self.cell(40, 10, f"{pieces:.2f}" if pd.notna(pieces) else "N/A", border=1, align="C")
+        self.cell(40, 10, f"{dollars:.2f}" if pd.notna(dollars) else "N/A", border=1, align="C")
+        self.cell(40, 10, f"{skus:.2f}" if pd.notna(skus) else "N/A", border=1, align="C")
+        self.ln()
+
+pdf = PDF()
+pdf.add_page()
+
+# Add table header
+pdf.set_font("Arial", "B", 10)
+pdf.cell(70, 10, "Employee", border=1, align="C")
+pdf.cell(40, 10, "Avg Pieces/Hr", border=1, align="C")
+pdf.cell(40, 10, "Avg $/Hr", border=1, align="C")
+pdf.cell(40, 10, "Avg Skus/Hr", border=1, align="C")
+pdf.ln()
+
+# Add employee rows
+for _, row in averages_df.iterrows():
+    pdf.add_summary_row(row["Employee"], row["Avg Pieces/Hr"], row["Avg $/Hr"], row["Avg Skus/Hr"])
+
+# Add grand averages at the bottom
+pdf.ln(10)
+pdf.set_font("Arial", "B", 12)
+pdf.cell(0, 10, "Grand Averages", ln=True)
+pdf.set_font("Arial", size=10)
+pdf.cell(0, 10, f"Avg Pieces/Hr: {grand_avg_pieces:.2f}" if pd.notna(grand_avg_pieces) else "Avg Pieces/Hr: No Data", ln=True)
+pdf.cell(0, 10, f"Avg $/Hr: {grand_avg_dollars:.2f}" if pd.notna(grand_avg_dollars) else "Avg $/Hr: No Data", ln=True)
+pdf.cell(0, 10, f"Avg Skus/Hr: {grand_avg_skus:.2f}" if pd.notna(grand_avg_skus) else "Avg Skus/Hr: No Data", ln=True)
+
+# Save Summary PDF
+pdf.output(summary_pdf_path)
+print(f"Summary PDF created at {summary_pdf_path}")
