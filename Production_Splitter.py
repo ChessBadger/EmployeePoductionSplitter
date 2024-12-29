@@ -111,7 +111,7 @@ df = pd.read_csv(csv_path)
 # Clean and convert columns to numeric
 df["Pieces/Hr"] = pd.to_numeric(df["Pieces/Hr"].str.replace(",", "", regex=True), errors="coerce").fillna(0)
 df["$/Hr"] = pd.to_numeric(df["$/Hr"].str.replace("[\$,]", "", regex=True), errors="coerce").fillna(0)
-df["Skus/Hr"] = pd.to_numeric(df["Skus/Hr"].str.replace(",", "", regex=True), errors="coerce").fillna(0)
+df["Skus/Hr"] = pd.to_numeric(df["Skus/Hr"].astype(str).str.replace(",", "", regex=True), errors="coerce").fillna(0)
 
 # Group data by employee
 grouped = df.groupby("Employee")
@@ -207,7 +207,7 @@ df = pd.read_csv(csv_path)
 # Clean and convert columns to numeric
 df["Pieces/Hr"] = pd.to_numeric(df["Pieces/Hr"].str.replace(",", "", regex=True), errors="coerce").fillna(0)
 df["$/Hr"] = pd.to_numeric(df["$/Hr"].str.replace("[\$,]", "", regex=True), errors="coerce").fillna(0)
-df["Skus/Hr"] = pd.to_numeric(df["Skus/Hr"].str.replace(",", "", regex=True), errors="coerce").fillna(0)
+df["Skus/Hr"] = pd.to_numeric(df["Skus/Hr"].astype(str).str.replace(",", "", regex=True), errors="coerce").fillna(0)
 
 # Calculate cumulative averages for each employee
 grouped = df.groupby("Employee")
@@ -232,6 +232,7 @@ averages_df = pd.DataFrame(employee_averages)
 grand_avg_pieces = averages_df["Avg Pieces/Hr"].mean()
 grand_avg_dollars = averages_df["Avg $/Hr"].mean()
 grand_avg_skus = averages_df["Avg Skus/Hr"].mean()
+
 
 # Sort employees by cumulative averages
 averages_df["Cumulative Avg"] = averages_df[["Avg Pieces/Hr", "Avg $/Hr", "Avg Skus/Hr"]].mean(axis=1, skipna=True)
