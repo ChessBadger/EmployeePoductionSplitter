@@ -87,6 +87,105 @@ import os
 
 # Paths
 csv_path = r"C:\Users\Laptop 122\Desktop\Store Prep\EmployeeProduction.csv"
+output_dir = r"C:\Users\Laptop 122\Desktop\Store Prep\EmployeeReports"
+
+# Create output directory if it doesn't exist
+os.makedirs(output_dir, exist_ok=True)
+
+# Load the CSV into a DataFrame
+df = pd.read_csv(csv_path)
+
+# Clean and convert columns to numeric
+df["Pieces/Hr"] = pd.to_numeric(df["Pieces/Hr"].str.replace(",", "", regex=True), errors="coerce").fillna(0)
+df["$/Hr"] = pd.to_numeric(df["$/Hr"].str.replace("[\$,]", "", regex=True), errors="coerce").fillna(0)
+df["Skus/Hr"] = pd.to_numeric(df["Skus/Hr"].str.replace(",", "", regex=True), errors="coerce").fillna(0)
+
+# Group data by employee
+grouped = df.groupby("Employee")
+
+# Define a function to create PDF
+class PDF(FPDF):
+    def header(self):
+        self.set_font("Arial", "B", 14)
+        self.cell(0, 10, "Employee Performance Report", align="C", ln=True)
+        self.ln(5)
+
+    def footer(self):
+        self.set_y(-15)
+        self.set_font("Arial", "I", 8)
+        self.cell(0, 10, f"Page {self.page_no()}", align="C")
+
+    def truncate_text(self, text, max_length=30):
+        """Truncates text to a maximum length, adding ellipsis if necessary."""
+        if len(text) > max_length:
+            return text[:max_length - 3] + "..."
+        return text
+
+    def add_table_row(self, col1, col2, col3, col4, col5):
+        self.set_font("Arial", size=10)
+        self.cell(30, 10, col1, border=1, align="C")
+        self.cell(70, 10, col2, border=1, align="L")
+        self.cell(30, 10, col3, border=1, align="C")
+        self.cell(30, 10, col4, border=1, align="C")
+        self.cell(30, 10, col5, border=1, align="C")
+        self.ln()
+
+for employee, group in grouped:
+    pdf = PDF()
+    pdf.add_page()
+
+    # Title for the employee
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, f"Employee: {employee}", ln=True)
+    pdf.ln(5)
+
+    # Add table header
+    pdf.set_font("Arial", "B", 10)
+    pdf.cell(30, 10, "Date", border=1, align="C")
+    pdf.cell(70, 10, "Store", border=1, align="C")
+    pdf.cell(30, 10, "Pieces/Hr", border=1, align="C")
+    pdf.cell(30, 10, "$/Hr", border=1, align="C")
+    pdf.cell(30, 10, "Skus/Hr", border=1, align="C")
+    pdf.ln()
+
+    # Add table rows
+    pdf.set_font("Arial", size=10)
+    for index, row in group.iterrows():
+        store = pdf.truncate_text(row["Store"], max_length=30)  # Truncate the Store column
+        pdf.add_table_row(
+            row["Date"],
+            store,
+            f"{row['Pieces/Hr']:.2f}" if row["Pieces/Hr"] > 0 else "N/A",
+            f"{row['$/Hr']:.2f}" if row["$/Hr"] > 0 else "N/A",
+            f"{row['Skus/Hr']:.2f}" if row["Skus/Hr"] > 0 else "N/A",
+        )
+
+    # Filter out blank/0 values before calculating averages
+    avg_pieces = group.loc[group["Pieces/Hr"] > 0, "Pieces/Hr"].mean()
+    avg_dollars = group.loc[group["$/Hr"] > 0, "$/Hr"].mean()
+    avg_skus = group.loc[group["Skus/Hr"] > 0, "Skus/Hr"].mean()
+
+    # Add averages section
+    pdf.ln(10)
+    pdf.set_font("Arial", "B", 12)
+    pdf.cell(0, 10, "Overall Averages", ln=True)
+    pdf.set_font("Arial", size=10)
+    pdf.cell(0, 10, f"Pieces/Hr: {avg_pieces:.2f}" if pd.notna(avg_pieces) else "Pieces/Hr: No Data", ln=True)
+    pdf.cell(0, 10, f"$/Hr: {avg_dollars:.2f}" if pd.notna(avg_dollars) else "$/Hr: No Data", ln=True)
+    pdf.cell(0, 10, f"Skus/Hr: {avg_skus:.2f}" if pd.notna(avg_skus) else "Skus/Hr: No Data", ln=True)
+
+    # Save PDF for this employee
+    pdf_file_path = os.path.join(output_dir, f"{employee.replace(' ', '_')}.pdf")
+    pdf.output(pdf_file_path)
+
+print(f"PDFs created in {output_dir}")
+
+import pandas as pd
+from fpdf import FPDF
+import os
+
+# Paths
+csv_path = r"C:\Users\Laptop 122\Desktop\Store Prep\EmployeeProduction.csv"
 summary_pdf_path = r"C:\Users\Laptop 122\Desktop\Store Prep\SummaryReport.pdf"
 
 # Load the CSV into a DataFrame
