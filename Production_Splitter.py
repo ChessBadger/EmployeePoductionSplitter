@@ -251,14 +251,14 @@ class PDF(FPDF):
 
     def add_summary_row(self, employee, pieces, dollars, skus, grand_avg_pieces, grand_avg_dollars, grand_avg_skus):
         self.set_font("Arial", size=10)
-    
+        
         # Employee name
         self.cell(70, 10, employee, border=1, align="L")
 
         # Pieces/Hr
         if pd.notna(pieces) and pieces < grand_avg_pieces:
             self.set_text_color(255, 0, 0)  # Red
-            self.set_font("Arial", "B", 10)  # Bold
+            self.set_font("Arial", "BU", 10)  # Bold and Underline
         self.cell(40, 10, f"{pieces:.2f}" if pd.notna(pieces) else "N/A", border=1, align="C")
         self.set_text_color(0, 0, 0)  # Reset to black
         self.set_font("Arial", size=10)  # Reset to normal font
@@ -266,7 +266,7 @@ class PDF(FPDF):
         # $/Hr
         if pd.notna(dollars) and dollars < grand_avg_dollars:
             self.set_text_color(255, 0, 0)  # Red
-            self.set_font("Arial", "B", 10)  # Bold
+            self.set_font("Arial", "BU", 10)  # Bold and Underline
         self.cell(40, 10, f"{dollars:.2f}" if pd.notna(dollars) else "N/A", border=1, align="C")
         self.set_text_color(0, 0, 0)  # Reset to black
         self.set_font("Arial", size=10)  # Reset to normal font
@@ -274,12 +274,13 @@ class PDF(FPDF):
         # Skus/Hr
         if pd.notna(skus) and skus < grand_avg_skus:
             self.set_text_color(255, 0, 0)  # Red
-            self.set_font("Arial", "B", 10)  # Bold
+            self.set_font("Arial", "BU", 10)  # Bold and Underline
         self.cell(40, 10, f"{skus:.2f}" if pd.notna(skus) else "N/A", border=1, align="C")
         self.set_text_color(0, 0, 0)  # Reset to black
         self.set_font("Arial", size=10)  # Reset to normal font
 
         self.ln()
+
 
 
 pdf = PDF()
