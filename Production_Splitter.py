@@ -198,7 +198,7 @@ import os
 
 # Paths
 csv_path = r"C:\Users\Laptop 122\Desktop\Store Prep\06 Employee Reports\EmployeeProduction.csv"
-summary_pdf_path = r"C:\Users\Laptop 122\Desktop\Store Prep\06 Employee Reports\SummaryReport.pdf"
+summary_pdf_path = r"C:\Users\Laptop 122\Desktop\Store Prep\06 Employee Reports\ProductionAveragesReport.pdf"
 
 # Load the CSV into a DataFrame
 df = pd.read_csv(csv_path)

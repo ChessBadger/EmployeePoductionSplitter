@@ -67,7 +67,7 @@ def create_sorted_pdf(employees, output_path):
 
 # Paths
 input_pdf_path = r'C:\Users\Laptop 122\Desktop\Store Prep\06 Employee Reports\CallInsReport.pdf'
-output_pdf_path = r'C:\Users\Laptop 122\Desktop\Store Prep\06 Employee Reports\SortedEmployeePoints.pdf'
+output_pdf_path = r'C:\Users\Laptop 122\Desktop\Store Prep\06 Employee Reports\SortedAttendancePoints.pdf'
 
 # Execution
 pdf_text = extract_data_from_pdf(input_pdf_path)
