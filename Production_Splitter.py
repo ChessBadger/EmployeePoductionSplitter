@@ -4,8 +4,8 @@ import re
 from datetime import datetime, timedelta
 
 # File path
-pdf_path = r"C:\Users\Laptop 122\Desktop\Store Prep\EmployeeProductionByStoreReport.pdf"
-csv_output_path = r"C:\Users\Laptop 122\Desktop\Store Prep\EmployeeProduction.csv"
+pdf_path = r"C:\Users\Laptop 122\Desktop\Store Prep\06 Employee Reports\EmployeeProductionByStoreReport.pdf"
+csv_output_path = r"C:\Users\Laptop 122\Desktop\Store Prep\06 Employee Reports\EmployeeProduction.csv"
 
 # Initialize an empty list to hold the extracted data
 data = []
@@ -98,8 +98,8 @@ from fpdf import FPDF
 import os
 
 # Paths
-csv_path = r"C:\Users\Laptop 122\Desktop\Store Prep\EmployeeProduction.csv"
-output_dir = r"C:\Users\Laptop 122\Desktop\Store Prep\EmployeeReports"
+csv_path = r"C:\Users\Laptop 122\Desktop\Store Prep\06 Employee Reports\EmployeeProduction.csv"
+output_dir = r"C:\Users\Laptop 122\Desktop\Store Prep\06 Employee Reports\EmployeeProductionReports"
 
 # Create output directory if it doesn't exist
 os.makedirs(output_dir, exist_ok=True)
@@ -197,8 +197,8 @@ from fpdf import FPDF
 import os
 
 # Paths
-csv_path = r"C:\Users\Laptop 122\Desktop\Store Prep\EmployeeProduction.csv"
-summary_pdf_path = r"C:\Users\Laptop 122\Desktop\Store Prep\SummaryReport.pdf"
+csv_path = r"C:\Users\Laptop 122\Desktop\Store Prep\06 Employee Reports\EmployeeProduction.csv"
+summary_pdf_path = r"C:\Users\Laptop 122\Desktop\Store Prep\06 Employee Reports\SummaryReport.pdf"
 
 # Load the CSV into a DataFrame
 df = pd.read_csv(csv_path)
