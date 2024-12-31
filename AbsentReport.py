@@ -24,7 +24,8 @@ def parse_employee_data(text):
                 name = parts[0].strip()
                 try:
                     points = int(parts[1].split('Value')[0].strip())
-                    employees.append((name, points))
+                    if points > 0:  # Exclude employees with zero points
+                        employees.append((name, points))
                 except ValueError:
                     print(f"Skipping line due to invalid points format: {line}")
     return employees
@@ -34,14 +35,33 @@ def create_sorted_pdf(employees, output_path):
     employees_sorted = sorted(employees, key=lambda x: x[1], reverse=True)
 
     pdf = FPDF()
-    pdf.set_font("Arial", size=12)
+    pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
-
+    pdf.set_font("Arial", size=12)
+    
+    # Title
+    pdf.set_font("Arial", style="B", size=16)
     pdf.cell(200, 10, txt="Employee Points Report", ln=True, align='C')
     pdf.ln(10)
-
+    
+    # Table Header
+    pdf.set_font("Arial", style="B", size=12)
+    pdf.cell(100, 10, txt="Name", border=1, align='C')
+    pdf.cell(40, 10, txt="Points", border=1, align='C')
+    pdf.ln()
+    
+    # Table Rows
+    pdf.set_font("Arial", size=12)
     for name, points in employees_sorted:
-        pdf.cell(200, 10, txt=f"{name}: {points} points", ln=True)
+        pdf.cell(100, 10, txt=name, border=1, align='L')
+        pdf.cell(40, 10, txt=str(points), border=1, align='C')
+        pdf.ln()
+    
+    # Page Number
+    pdf.alias_nb_pages()
+    pdf.set_y(-15)
+    pdf.set_font("Arial", size=8)
+    pdf.cell(0, 10, txt=f"Page {pdf.page_no()} of {{nb}}", align='C')
 
     pdf.output(output_path)
 
