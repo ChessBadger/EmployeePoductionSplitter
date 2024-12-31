@@ -1,11 +1,16 @@
+import re
 import PyPDF2
 from fpdf import FPDF
 
-# Function to extract data from the provided PDF
+# Function to extract data from the provided PDF and filter out unwanted substrings
 def extract_data_from_pdf(file_path):
     with open(file_path, 'rb') as file:
         reader = PyPDF2.PdfReader(file)
         text = "".join(page.extract_text() for page in reader.pages)
+    
+    # Remove substrings matching the date format and page numbering format
+    text = re.sub(r"\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), [A-Za-z]+ \d{1,2}, \d{4}\b", "", text)
+    text = re.sub(r"Page \d+ of \d+", "", text)
     return text
 
 # Function to parse the text and extract employee data
@@ -17,8 +22,11 @@ def parse_employee_data(text):
             parts = line.split('-')
             if len(parts) > 1:
                 name = parts[0].strip()
-                points = int(parts[1].split('Value')[0].strip())
-                employees.append((name, points))
+                try:
+                    points = int(parts[1].split('Value')[0].strip())
+                    employees.append((name, points))
+                except ValueError:
+                    print(f"Skipping line due to invalid points format: {line}")
     return employees
 
 # Function to create a sorted PDF
