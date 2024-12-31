@@ -19,7 +19,7 @@ def parse_employee_data(text):
     lines = text.splitlines()
     for line in lines:
         if '-' in line and 'Value' in line:
-            parts = line.split('-')
+            parts = line.split(' - ')
             if len(parts) > 1:
                 name = parts[0].strip()
                 try:
