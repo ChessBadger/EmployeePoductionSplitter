@@ -51,8 +51,9 @@ def parse_employee_data_with_carryover(page_text):
                     # Combine store back into a single string
                     store = " ".join(store).strip()
 
+                    if "PICK #874" in store:
                     # Check if the store should be excluded
-                    if store == "PICK #874 +RX, KENOSHA-HWY 338":
+                    # if store == "PICK #874 +RX, KENOSHA-HWY 338":
                         continue  # Skip adding this record to the data list
 
                     # Append the row to the data
